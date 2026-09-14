@@ -1,0 +1,10 @@
+import React from 'react';import {createRoot} from 'react-dom/client';import {BrowserRouter} from 'react-router-dom';import App from './App';import {AppProvider} from './context/AppContext';import './styles.css';
+import RouteEffects from './components/common/RouteEffects';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import '@fontsource/dm-sans/400.css';
+import '@fontsource/dm-sans/500.css';
+import '@fontsource/dm-sans/600.css';
+import '@fontsource/dm-sans/700.css';
+import '@fontsource/dm-serif-display/400.css';
+import './campus-objects.css';
+createRoot(document.getElementById('root')).render(<React.StrictMode><ErrorBoundary><BrowserRouter><RouteEffects/><AppProvider><App/></AppProvider></BrowserRouter></ErrorBoundary></React.StrictMode>);

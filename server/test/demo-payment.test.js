@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+const base=(process.env.TEST_BASE_URL||'http://127.0.0.1:3001')+'/api';
+async function login(email,password){const r=await fetch(base+'/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password})});assert.equal(r.status,200);return r.headers.get('set-cookie').split(';')[0]}
+test('demo checkout is participant-only and rejects owner payment',async()=>{const r=await fetch(base+'/transactions/1/demo-payment');assert.equal(r.status,401);const cookie=await login('lender@campusshare.demo','Lender123!');const result=await fetch(base+'/transactions/1/demo-payment',{method:'POST',headers:{cookie}});assert.equal(result.status,403)});
+test('borrower can inspect checkout and active exchanges cannot start payment',async()=>{const cookie=await login('student@campusshare.demo','Student123!');assert.equal((await fetch(base+'/transactions/1/demo-payment',{headers:{cookie}})).status,200);assert.equal((await fetch(base+'/transactions/2/demo-payment',{method:'POST',headers:{cookie}})).status,409)});

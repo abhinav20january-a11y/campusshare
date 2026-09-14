@@ -1,0 +1,20 @@
+{
+  "name": "campusshare-platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "start": "node scripts/start-full.mjs",
+    "check": "npm run build && node --check server/src/server.js && node --check server/src/app.js",
+    "test": "npm run build && TEST_BASE_URL=http://127.0.0.1:3000 npm --prefix server test"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "mysql2": "^3.14.3"
+  }
+}

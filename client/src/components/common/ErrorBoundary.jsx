@@ -1,0 +1,2 @@
+import {Component} from 'react';
+export default class ErrorBoundary extends Component{state={failed:false};static getDerivedStateFromError(){return {failed:true}}render(){if(this.state.failed)return <main className="container narrow"><div className="panel empty"><h1>Let’s get you back on track.</h1><p>This screen could not load. Your saved exchanges are still in your account.</p><a className="button" href="/">Return home</a></div></main>;return this.props.children}}

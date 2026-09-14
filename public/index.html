@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07110f">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="BorrowBox — access useful gear from verified students nearby.">
+  <meta property="og:title" content="BorrowBox — Campus access network">
+  <meta property="og:description" content="Borrow useful gear from verified students nearby.">
+  <meta property="og:type" content="website">
+  <title>BorrowBox — Campus access network</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/camera.webp" as="image" type="image/webp" fetchpriority="high">
+  <link rel="stylesheet" href="styles.css?v=20260905-2">
+</head>
+<body>
+  <a class="skip-link" href="#explore">Skip to inventory</a>
+  <section class="auth-gate" id="authGate" aria-label="BorrowBox member sign in">
+    <div class="auth-brand"><span class="brand-orbit"><i></i></span><b>borrowbox</b><em>campus access</em></div>
+    <div class="auth-visual" aria-hidden="true">
+      <video id="authVideo" autoplay muted playsinline preload="metadata">
+        <source src="assets/borrowbox-intro.mp4" type="video/mp4">
+      </video>
+    </div>
+    <p class="auth-tagline">A trusted signal for everything your campus can share.</p>
+    <div class="auth-beam" aria-hidden="true"></div>
+    <div class="auth-panel" id="authPanel" aria-hidden="true">
+      <div class="auth-card">
+        <div class="auth-card-status"><span><i></i> Secure campus node</span><span>BBX / 01</span></div>
+        <p class="modal-label">MEMBER ACCESS</p>
+        <h1>Welcome back.</h1>
+        <p>Sign in with your college identity to enter the borrowing network.</p>
+        <form id="loginForm">
+          <label>College email<input id="loginEmail" name="email" type="email" placeholder="you@college.edu" autocomplete="email" required></label>
+          <label>Password<div class="auth-input"><input id="loginPassword" name="password" type="password" placeholder="Minimum 6 characters" autocomplete="current-password" minlength="6" required><button id="showPassword" type="button">Show</button></div></label>
+          <div class="auth-options"><label><input type="checkbox" name="remember"> Remember me</label><button type="button" id="forgotPassword">Forgot password?</button></div>
+          <button class="auth-submit" type="submit"><span>Enter BorrowBox</span><b>→</b></button>
+          <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
+        </form>
+        <p class="auth-signup">New to the network? <button id="createAccount" type="button">Create an account</button></p>
+      </div>
+    </div>
+  </section>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div><div class="grid-noise"></div>
+  <header class="site-header">
+    <nav class="nav shell" aria-label="Main navigation">
+      <a class="brand" href="#home" aria-label="BorrowBox home"><span class="brand-orbit"><i></i></span><b>borrowbox</b><em>beta</em></a>
+      <div class="nav-links"><a class="active" href="#explore">Discover</a><a href="#how">Protocol</a><a href="#safety">Network</a></div>
+      <div class="nav-actions"><button class="ghost-action" id="themeButton">Light mode</button><button class="list-action" id="listButton"><span>＋</span> List gear</button><button class="avatar" aria-label="Open your dashboard">AS<i></i></button></div>
+      <button class="mobile-menu" id="mobileMenu" aria-label="Menu" aria-expanded="false">Menu</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero shell" id="home">
+      <div class="hero-status"><span><i></i> Campus network online</span><span>North Campus · 28.7041° N</span></div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">PEER-TO-PEER ACCESS / 2026</p>
+          <h1>Access more.<br><span>Own less.</span></h1>
+          <p class="hero-intro">A trusted borrowing network for verified students. Find the gear you need, exactly where and when you need it.</p>
+          <div class="hero-proof"><div><strong>2.4k</strong><span>verified students</span></div><div><strong>₹3.2L</strong><span>saved this semester</span></div><div><strong>4.92</strong><span>network trust score</span></div></div>
+        </div>
+        <div class="hero-stage" aria-label="Featured items available nearby">
+          <div class="stage-ring ring-a"></div><div class="stage-ring ring-b"></div>
+          <article class="stage-card stage-main"><img src="assets/camera.webp" srcset="assets/camera-640.webp 640w, assets/camera.webp 1200w" sizes="(max-width:640px) 280px, 330px" alt="Sony camera available nearby" width="1200" height="1500" fetchpriority="high"><div class="stage-card-top"><span>CREATOR / 01</span><button aria-label="Save Sony camera">♡</button></div><div class="stage-card-copy"><div><small>350 M AWAY</small><strong>Sony Alpha Camera</strong></div><b>₹120<span>/day</span></b></div></article>
+          <article class="stage-card stage-small stage-left"><img src="assets/controller.webp" srcset="assets/controller-640.webp 640w, assets/controller.webp 1200w" sizes="175px" alt="PS5 controller" width="1200" height="800"><span>PS5 DualSense · ₹60</span></article>
+          <article class="stage-card stage-small stage-right"><img src="assets/calculator.webp" srcset="assets/calculator-640.webp 640w, assets/calculator.webp 1200w" sizes="175px" alt="Calculator" width="1200" height="1200"><span>Casio FX-991 · ₹20</span></article>
+          <div class="signal-card"><i></i><div><span>LIVE SIGNAL</span><b>8 items within 700m</b></div></div>
+        </div>
+      </div>
+      <div class="search-console">
+        <div class="console-label"><span>⌘</span><small>QUICK ACCESS</small></div>
+        <label><span>Search campus inventory</span><input id="heroSearch" type="search" placeholder="Camera, calculator, power bank..." aria-label="Search campus inventory"></label>
+        <label class="location-control"><span>Zone</span><select id="locationSelect" aria-label="Campus zone"><option>North Campus</option><option>South Campus</option><option>Hostel Zone</option></select></label>
+        <button id="searchButton">Scan network <span>→</span></button>
+      </div>
+      <div class="quick-queries"><span>POPULAR SIGNALS</span><button data-search="Calculator">Calculator</button><button data-search="Camera">Camera</button><button data-search="Charger">Charger</button><button data-search="Controller">Controller</button></div>
+    </section>
+
+    <section class="network-strip"><div class="shell"><div><i class="pulse"></i><span>NETWORK STATUS</span><strong>Operational</strong></div><div><span>ACTIVE LISTINGS</span><strong>24</strong></div><div><span>EXCHANGES TODAY</span><strong>18</strong></div><div><span>AVG. RESPONSE</span><strong>4 min</strong></div><div><span>TEST PAYMENTS</span><strong>Secured</strong></div></div></section>
+
+    <section class="market shell" id="explore">
+      <div class="section-head"><div><p class="eyebrow">LIVE INVENTORY</p><h2>Available around you<span>.</span></h2></div><div class="section-aside"><i></i><p>Inventory updates in real time<br>from verified campus nodes.</p></div></div>
+      <div class="market-toolbar"><div class="categories" aria-label="Item categories"><button class="category active" data-category="All">All gear</button><button class="category" data-category="Electronics">Electronics</button><button class="category" data-category="Study">Study</button><button class="category" data-category="Gaming">Gaming</button><button class="category" data-category="Creator">Creator</button><button class="category" data-category="Daily">Daily</button></div><button class="view-all" id="viewAll">Reset view ↺</button></div>
+      <div class="items-grid" id="itemsGrid"></div><p class="empty-state" id="emptyState">No matching signal found. Try a different item.</p>
+    </section>
+
+    <section class="protocol" id="how"><div class="shell"><div class="protocol-intro"><p class="eyebrow">THE EXCHANGE PROTOCOL</p><h2>Trust, encoded<br>into every handoff.</h2><p>BorrowBox replaces informal chats with a clear, verifiable exchange record—without making borrowing feel complicated.</p><button id="heroListButton">Contribute an item <span>↗</span></button></div><div class="protocol-flow"><article><span>01</span><i>⌕</i><div><h3>Discover</h3><p>Scan verified inventory inside your campus radius.</p></div></article><article><span>02</span><i>↗</i><div><h3>Request</h3><p>Choose dates and send the owner a clear request.</p></div></article><article><span>03</span><i>⌘</i><div><h3>Verify</h3><p>Confirm payment and handover with private codes.</p></div></article><article><span>04</span><i>✓</i><div><h3>Return</h3><p>Close the exchange and update the trust layer.</p></div></article></div></div></section>
+
+    <section class="trust shell" id="safety"><div class="trust-grid"><div class="trust-visual"><img src="assets/controller.webp" srcset="assets/controller-640.webp 640w, assets/controller.webp 1200w" sizes="(max-width:1020px) calc(100vw - 48px), 42vw" alt="Shared gaming controller" width="1200" height="800" loading="lazy" decoding="async"><div class="scan-line"></div><div class="visual-chip chip-a"><span>IDENTITY</span><b>Verified</b></div><div class="visual-chip chip-b"><span>HANDOVER</span><b>OTP secured</b></div></div><div class="trust-copy"><p class="eyebrow">BUILT FOR REAL-WORLD TRUST</p><h2>People you can verify.<br>Exchanges you can trace.</h2><p>Every profile belongs to a college identity. Every payment, handover and return creates a clear record for both sides.</p><div class="trust-metrics"><div><span>01</span><b>College ID layer</b><p>Only verified campus emails and student IDs enter the network.</p></div><div><span>02</span><b>Two-way verification</b><p>Private OTPs confirm both handover and successful return.</p></div><div><span>03</span><b>Reputation graph</b><p>Ratings follow completed exchanges—not anonymous clicks.</p></div></div></div></div></section>
+  </main>
+
+  <footer><div class="shell footer-grid"><div><a class="brand footer-brand" href="#home"><span class="brand-orbit"><i></i></span><b>borrowbox</b></a><p>Campus access infrastructure.<br>Built to move useful things.</p></div><div><span>PRODUCT</span><a href="#explore">Discover</a><a href="#how">Protocol</a><a href="#safety">Trust network</a></div><div><span>SYSTEM</span><p><i class="pulse"></i> MySQL connected</p><p>Test payments active</p><p>North Campus node</p></div><small>BorrowBox / College build<br>Version 1.0.0 · 2026</small></div></footer>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <section class="modal" id="requestModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close">×</button>
+      <div class="checkout-transition" id="checkoutTransition" hidden aria-hidden="true"><div class="transition-orb"><span>BB</span><i></i><i></i><i></i></div><p>Securing your checkout</p></div>
+      <div id="requestStep"><span class="modal-label">NEW BORROW REQUEST</span><h2 id="modalTitle">Configure access</h2><div class="selected-item" id="selectedItem"></div><div class="form-row"><label>Start date<input type="date" id="borrowDate"></label><label>Access duration<select id="duration"><option value="1">1 day</option><option value="2">2 days</option><option value="3">3 days</option><option value="7">1 week</option></select></label></div><label>Message to owner<textarea id="requestMessage" rows="3" placeholder="Tell them what you need it for..."></textarea></label><div class="bill"><div><span>Rental amount</span><b id="rentalAmount">₹0</b></div><div><span>Platform fee · demo</span><b>₹5</b></div><div class="bill-total"><span>Total authorization</span><b id="totalAmount">₹0</b></div></div><button class="btn btn-primary full" id="sendRequest">Continue to test payment →</button></div>
+      <div class="payment-step" id="paymentStep" hidden>
+        <div class="checkout-head"><div class="payment-logo"><span>R</span> Razorpay <small>TEST</small></div><div class="checkout-progress"><span class="done">Request</span><i></i><span class="active">Payment</span><i></i><span>Handover</span></div></div>
+        <h2 id="paymentTitle">Payment details</h2><p>No real money is charged. Use the supplied test card to demonstrate the animated checkout.</p>
+        <div class="payment-methods"><button class="active" data-pay-method="card">Card</button><button data-pay-method="upi">UPI</button></div>
+        <div class="card-payment" id="cardPayment">
+          <div class="payment-card-scene"><div class="payment-card" id="paymentCard"><div class="card-face card-front"><div class="card-top"><span class="card-chip"></span><b>BORROWBOX</b></div><div class="card-number" id="visualCardNumber">4242 4242 4242 4242</div><div class="card-bottom"><div><small>CARDHOLDER</small><strong id="visualCardName">AARAV SHARMA</strong></div><div><small>EXPIRES</small><strong id="visualExpiry">12/28</strong></div><em>VISA</em></div></div><div class="card-face card-back"><div class="card-stripe"></div><div class="signature"><span>AUTHORIZED SIGNATURE</span><b id="visualCvc">123</b></div><small>TEST CARD · NOT VALID FOR REAL TRANSACTIONS</small></div></div></div>
+          <div class="card-fields"><label>Cardholder name<input id="cardName" value="Aarav Sharma" autocomplete="cc-name"></label><label>Card number<input id="cardNumber" value="4242 4242 4242 4242" inputmode="numeric" autocomplete="cc-number" maxlength="19"></label><div class="form-row"><label>Expiry<input id="cardExpiry" value="12/28" inputmode="numeric" autocomplete="cc-exp" maxlength="5"></label><label>CVC <span class="field-hint">back of card</span><input id="cardCvc" value="123" inputmode="numeric" autocomplete="cc-csc" maxlength="3"></label></div></div>
+        </div>
+        <div class="upi-payment" id="upiPayment" hidden><label>Demo UPI ID<input id="upiId" value="student@upi" placeholder="name@bank"></label><div class="upi-note"><span>UPI</span><div><b>Test authorization</b><small>A simulated success response will be stored in MySQL.</small></div></div></div>
+        <label class="save-payment"><input type="checkbox" checked> Save this test method for this browser session</label><div class="pay-summary"><span>Total authorization</span><strong id="payAmount">₹0</strong></div><button class="btn btn-primary full liquid-pay" id="payButton"><i class="pay-liquid" aria-hidden="true"></i><span class="pay-label">Authorize <b id="payButtonAmount"></b> →</span></button><small class="secure-note">PCI-style demonstration · encrypted test environment · no real charge</small>
+      </div>
+      <div class="success-step" id="successStep" hidden><div class="success-check">✓</div><span class="modal-label">ACCESS VERIFIED</span><h2 id="successTitle">Item reserved</h2><p>The owner has been notified. Use this private code at handover.</p><div class="otp"><small>HANDOVER TOKEN</small><strong id="otpCode">482 917</strong></div><div class="timeline"><span class="done">Request</span><span class="done">Accepted</span><span class="done">Paid</span><span>Handover</span><span>Return</span></div><button class="btn btn-primary full" id="doneButton">Open dashboard</button></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="listBackdrop" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="listTitle"><button class="modal-close" data-close="listBackdrop" aria-label="Close">×</button><span class="modal-label">CONTRIBUTE TO THE NETWORK</span><h2 id="listTitle">List your gear</h2><p class="modal-intro">Make an underused item discoverable to verified students nearby.</p><form id="listForm"><div class="form-row"><label>Item name<input id="newItemName" required placeholder="e.g. HDMI cable"></label><label>Category<select id="newItemCategory"><option>Electronics</option><option>Study</option><option>Gaming</option><option>Creator</option><option>Daily</option></select></label></div><div class="form-row"><label>Price per day (₹)<input id="newItemPrice" required min="0" type="number" placeholder="30"></label><label>Handover point<input id="newItemLocation" required placeholder="Library gate"></label></div><label>Description<textarea id="newItemDescription" rows="3" required placeholder="Condition, accessories and useful details..."></textarea></label><label class="photo-drop"><span>＋</span><div><b>Product image</b><small>A category image is assigned in this demo.</small></div></label><button class="btn btn-primary full" type="submit">Publish to network →</button></form></section></div>
+
+  <div class="modal-backdrop" id="dashboardBackdrop" hidden><section class="modal dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="dashboardTitle"><button class="modal-close" data-close="dashboardBackdrop" aria-label="Close">×</button><div class="profile-head"><div class="profile-avatar">AS<i></i></div><div><span class="verified">● IDENTITY VERIFIED</span><h2 id="dashboardTitle">Aarav Sharma</h2><p>Computer Science · North Campus node</p></div></div><div class="dashboard-stats"><div><strong id="borrowCount">0</strong><small>Active access</small></div><div><strong>4.9</strong><small>Trust score</small></div><div><strong id="savedCount">0</strong><small>Saved gear</small></div></div><div class="dash-title"><h3>Active exchanges</h3><span>LIVE</span></div><div id="bookingList" class="booking-list"></div></section></div>
+
+  <div class="modal-backdrop" id="ratingBackdrop" hidden><section class="modal rating-modal" role="dialog" aria-modal="true" aria-labelledby="ratingTitle"><button class="modal-close" data-close="ratingBackdrop" aria-label="Close">×</button><div class="success-check">✓</div><span class="modal-label">RETURN VERIFIED</span><h2 id="ratingTitle">Update trust score</h2><p class="modal-intro">Rate the completed exchange to strengthen the campus network.</p><div class="rating-stars" id="ratingStars"><button data-star="1">★</button><button data-star="2">★</button><button data-star="3">★</button><button data-star="4">★</button><button data-star="5">★</button></div><label>Exchange note<textarea id="ratingComment" rows="3" placeholder="Item condition, communication, handover..."></textarea></label><button class="btn btn-primary full" id="submitRating">Submit verification</button></section></div>
+  <div class="toast" id="toast" role="status"></div>
+  <nav class="liquid-dock" id="liquidDock" aria-label="Mobile navigation">
+    <span class="dock-blob" aria-hidden="true"></span>
+    <a class="dock-item active" href="#home" data-dock="0" aria-label="Home"><span aria-hidden="true">⌂</span><small>Home</small></a>
+    <a class="dock-item" href="#explore" data-dock="1" aria-label="Discover"><span aria-hidden="true">⌕</span><small>Discover</small></a>
+    <button class="dock-item dock-create" id="dockList" data-dock="2" aria-label="List"><span aria-hidden="true"></span><small>List</small></button>
+    <a class="dock-item" href="#how" data-dock="3" aria-label="Protocol"><span aria-hidden="true">↗</span><small>Protocol</small></a>
+    <button class="dock-item" id="dockProfile" data-dock="4" aria-label="Profile"><span aria-hidden="true">◎</span><small>Profile</small></button>
+  </nav>
+  <script src="app.js?v=20260905-2"></script>
+</body>
+</html>
