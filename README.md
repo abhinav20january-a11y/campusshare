@@ -38,6 +38,19 @@ Open `http://localhost:3000`. MySQL must match the values in `server/.env`.
 - [Contribution guide](CONTRIBUTING.md)
 - [Design handoff and launch checklist](DESIGN-HANDOFF.md)
 
+## SE Documentation
+
+All software engineering documentation is in the `docs/` folder:
+
+| Document | Description |
+|---|---|
+| [Feasibility Study](docs/feasibility-study.md) | Technical, economic, social and legal feasibility analysis |
+| [SRS](docs/SRS.md) | Software Requirements Specification — 61 functional + 18 non-functional requirements |
+| [MoSCoW](docs/MoSCoW.md) | Requirements prioritisation (Must / Should / Could / Won't) |
+| [Architecture](docs/architecture.md) | High-level design, 3-tier architecture, module map, design patterns |
+| [Test Cases](docs/test-cases.md) | 56 test cases across 7 categories with pass/fail results |
+| [SPM](docs/SPM.md) | Sprint plan, risk register, version control strategy, team roles |
+
 This repository is public source code, not a publicly deployed website. Never commit `.env` files, production credentials, database dumps or real user data. Demo credentials are for a local seeded database only.
 
 ## Integration tests
