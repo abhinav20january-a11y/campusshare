@@ -11,10 +11,16 @@
     "build": "npm --prefix client run build",
     "start": "node scripts/start-full.mjs",
     "check": "npm run build && node --check server/src/server.js && node --check server/src/app.js",
-    "test": "npm run build && TEST_BASE_URL=http://127.0.0.1:3000 npm --prefix server test"
+    "test": "npm run build && set \"TEST_BASE_URL=http://127.0.0.1:3000\" && npm --prefix server test"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
     "mysql2": "^3.14.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@vitejs/plugin-react": "^6.2.1",
+    "nodemailer": "^10.4.0",
+    "vite": "^8.3.6"
   }
 }
