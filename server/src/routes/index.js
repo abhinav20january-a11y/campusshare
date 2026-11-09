@@ -11,6 +11,7 @@ import * as transactions from '../controllers/transactionController.js';
 import * as community from '../controllers/communityController.js';
 import * as admin from '../controllers/adminController.js';
 import * as borrow from '../services/borrowing.js';
+import * as items from '../controllers/itemController.js';
 import cloudinary from '../config/cloudinary.js';
 export const router=Router();
 const authLimit=rateLimit({windowMs:15*60000,limit:80,standardHeaders:'draft-8',legacyHeaders:false});

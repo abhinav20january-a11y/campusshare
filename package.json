@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "dotenv": "^17.4.2",
-    "mysql2": "^3.14.3"
+    "mysql2": "^3.14.3",
+    "pdfkit": "^0.13.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",

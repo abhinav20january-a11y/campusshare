@@ -17,8 +17,26 @@ export async function sendEmail(to, subject, html) {
   const pass = process.env.EMAIL_PASS;
   const from = process.env.EMAIL_FROM || user;
 
+  // Send email using configured SMTP or fallback to Ethereal test account
   if (!host || !user || !pass) {
-    console.warn('Email configuration missing – email not sent');
+    // No real SMTP config – create a test account (Ethereal) for development
+    const testAccount = await nodemailer.createTestAccount();
+    const transporter = nodemailer.createTransport({
+      host: testAccount.smtp.host,
+      port: testAccount.smtp.port,
+      secure: testAccount.smtp.secure,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+    console.log('Ethereal email account created – preview URLs will be logged');
+    try {
+      const info = await transporter.sendMail({ from, to, subject, html });
+      console.log(`Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+    } catch (err) {
+      console.error('Failed to send email via Ethereal:', err);
+    }
     return;
   }
 
@@ -26,7 +44,7 @@ export async function sendEmail(to, subject, html) {
     host,
     port,
     secure: port === 465, // true for 465, false for other ports
-    auth: {user, pass},
+    auth: { user, pass },
   });
 
   const mailOptions = {
