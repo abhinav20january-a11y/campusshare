@@ -1092,6 +1092,8 @@ footer > div > a:not(.logo):hover { color: var(--ink); }
 .detail-actions { display: flex; gap: 10px; margin-top: 14px; }
 .detail-actions button { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius); background: var(--surface-2); font-size: .8125rem; color: var(--muted); transition: color var(--duration), background var(--duration); }
 .detail-actions button:hover { color: var(--ink); background: var(--surface-3); }
+.detail-actions button.saved { color: #e63946; }
+.detail-actions button.saved:hover { color: #c1121f; background: var(--surface-3); }
 
 .lender-card, .member-row {
   display: flex;

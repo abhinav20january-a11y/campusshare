@@ -1,4 +1,5 @@
 import React from 'react';import {createRoot} from 'react-dom/client';import {BrowserRouter} from 'react-router-dom';import App from './App';import {AppProvider} from './context/AppContext';import './styles.css';
+import './design/theme.css';
 import RouteEffects from './components/common/RouteEffects';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import '@fontsource/dm-sans/400.css';

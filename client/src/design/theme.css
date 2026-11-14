@@ -1,0 +1,54 @@
+/* Theme variables for CampusShare UI */
+:root {
+  --font-primary: 'Inter', sans-serif;
+  --color-primary: hsl(210, 85%, 45%);
+  --color-primary-dark: hsl(210, 85%, 35%);
+  --color-bg: hsl(210, 20%, 98%);
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f8fafc;
+  --color-text-primary: hsl(210, 15%, 15%);
+  --color-text-secondary: hsl(210, 10%, 45%);
+  --color-muted: hsl(210, 10%, 92%);
+  --radius-sm: 0.4rem;
+  --radius-md: 0.8rem;
+  --radius-lg: 1.2rem;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.12);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.15);
+}
+
+/* Global resets */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-primary);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Utility classes */
+.fade-in {opacity:0;animation: fadeIn .6s ease-out forwards;}
+@keyframes fadeIn {to {opacity:1;}}
+.hover-scale {transition: transform .3s;}
+.hover-scale:hover {transform: scale(1.03);}
+.hero-search {background:#fff;padding:6px;border-radius:19px;box-shadow:0 12px 32px #18356310;max-width:635px;border:1px solid #ffffffd9;display:flex;align-items:center;gap:4px;}
