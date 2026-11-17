@@ -1,5 +1,6 @@
-import {Link, useNavigate} from 'react-router-dom';
-import {motion, useReducedMotion} from 'motion/react';
+
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'motion/react';
 import {
   Search,
   ArrowUpRight,
@@ -14,11 +15,29 @@ import {
   Cable,
   MapPin
 } from 'lucide-react';
-import {useState} from 'react';
+import { useState } from 'react';
 
-import {useData} from '../hooks/useData';
-import {ItemGrid, DataState} from '../components/common/UI';
+import { useData } from '../hooks/useData';
+import { ItemGrid, DataState } from '../components/common/UI';
 import NewHero from '../components/home/NewHero';
+
+// Backend URL used for uploaded images
+const API_ORIGIN = (
+  import.meta.env.VITE_API_URL || 'http://localhost:3001'
+)
+  .replace(/\/+$/, '')
+  .replace(/\/api$/, '');
+
+// Convert relative upload URLs into absolute backend URLs
+function getImageUrl(url) {
+  if (!url) return '';
+
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  return `${API_ORIGIN}${url.startsWith('/') ? '' : '/'}${url}`;
+}
 
 export const categoryIcons = {
   Electronics: Headphones,
@@ -51,10 +70,23 @@ export default function Home() {
 
   const data = useData('/items?sort=recommended');
 
+  // Normalize image URLs for featured item cards
+  const featuredItems = (data.data?.items || [])
+    .slice(0, 8)
+    .map(item => ({
+      ...item,
+      images: Array.isArray(item.images)
+        ? item.images.map(image => ({
+            ...image,
+            url: getImageUrl(image.url)
+          }))
+        : item.images
+    }));
+
   const enter = {
-    initial: reduce ? false : {opacity: 0, y: 18},
-    animate: {opacity: 1, y: 0},
-    transition: {duration: 0.55}
+    initial: reduce ? false : { opacity: 0, y: 18 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.55 }
   };
 
   return (
@@ -121,7 +153,9 @@ export default function Home() {
                 </select>
               </label>
 
-              <button type="submit" className="button">Search</button>
+              <button type="submit" className="button">
+                Search
+              </button>
             </form>
 
             <Link className="button secondary" to="/items">
@@ -130,12 +164,12 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          {/* HERO IMAGE - SEPARATE FROM TEXT */}
+          {/* HERO IMAGE */}
           <motion.div
             className="objects-art"
-            initial={reduce ? false : {opacity: 0, x: 24}}
-            animate={{opacity: 1, x: 0}}
-            transition={{duration: 0.8}}
+            initial={reduce ? false : { opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
           >
             <img
               src="/assets/generated/campus-objects-hero.jpg"
@@ -189,7 +223,7 @@ export default function Home() {
 
         <DataState {...data}>
           <ItemGrid
-            items={data.data?.items?.slice(0, 8) || []}
+            items={featuredItems}
             refresh={data.refresh}
           />
         </DataState>
@@ -241,10 +275,10 @@ export default function Home() {
           ].map(([n, t, d]) => (
             <motion.article
               key={n}
-              initial={reduce ? false : {opacity: 0, y: 16}}
-              whileInView={{opacity: 1, y: 0}}
-              viewport={{once: true, amount: 0.4}}
-              transition={{duration: 0.4}}
+              initial={reduce ? false : { opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.4 }}
             >
               <span>{n}</span>
 
@@ -258,13 +292,12 @@ export default function Home() {
         </div>
       </section>
 
-
-
       {/* SUSTAINABILITY */}
       <section className="objects-sustainability">
         <div className="objects-section-title">
           <h2>Sustainability on campus</h2>
         </div>
+
         <p className="objects-lede">
           Borrowing and sharing reduce unnecessary purchases, lower waste and support a greener campus lifestyle.
         </p>
@@ -280,7 +313,7 @@ export default function Home() {
 
           <p>
             Verified student accounts, clear exchange records
-            and two‑way reviews.
+            and two-way reviews.
           </p>
         </div>
 

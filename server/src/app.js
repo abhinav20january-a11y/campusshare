@@ -12,12 +12,10 @@ import { existsSync } from 'node:fs';
 
 import { router } from './routes/index.js';
 import { production } from './config/env.js';
-
 import { razorpayRoutes } from './routes/razorpay.js';
 
 export const app = express();
 
-// Hide Express identification header.
 app.disable('x-powered-by');
 
 // ============================================
@@ -61,6 +59,11 @@ const origins = new Set([
 
 app.use(
   helmet({
+    // Allow frontend to display backend-hosted images.
+    crossOriginResourcePolicy: {
+      policy: 'cross-origin'
+    },
+
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -193,6 +196,7 @@ app.use('/api', (req, res) => {
 // STATIC FILES
 // ============================================
 
+// Existing root-level public assets.
 app.use(
   '/assets',
   express.static(
@@ -205,15 +209,23 @@ app.use(
   )
 );
 
-// Serve uploaded images
+// ============================================
+// UPLOADED IMAGES
+// ============================================
+
+// Actual directory: server/public/uploads
 app.use(
   '/uploads',
   express.static(
     fileURLToPath(
-      new URL('../../public/uploads', import.meta.url)
+      new URL('../public/uploads', import.meta.url)
     )
   )
 );
+
+// ============================================
+// 404 STATIC FILES
+// ============================================
 
 app.use(
   '/404',
@@ -245,9 +257,7 @@ if (existsSync(client)) {
 // ============================================
 
 app.use((err, req, res, next) => {
-  console.error(
-    err.code || err.message
-  );
+  console.error(err.code || err.message);
 
   const status =
     err.status ||

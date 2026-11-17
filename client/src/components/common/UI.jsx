@@ -1,13 +1,412 @@
-import {Link} from 'react-router-dom';import {X,ArrowUpRight,Package,LoaderCircle,ShieldCheck,Heart,MapPin,Star} from 'lucide-react';import {useEffect,useRef} from 'react';import {useApp} from '../../context/AppContext';import {api} from '../../api/client';
-export function Button({children,busy,variant='',...props}){return <button className={`button ${variant}`} disabled={busy||props.disabled} {...props}>{busy&&<LoaderCircle size={16} className="spin"/>}{children}</button>}
-export function Field({label,children,...props}){return <label className="field"><span>{label}</span>{children||<input {...props}/>}</label>}
-export function Badge({children,tone=''}){return <span className={`badge ${tone}`}>{String(children||'').replaceAll('_',' ')}</span>}
-export function Avatar({name='',src,size=''}){return src?<img className={`avatar ${size}`} src={src} alt={name}/>:<span className={`avatar ${size}`}>{name.split(' ').map(x=>x[0]).slice(0,2).join('')}</span>}
-export function Empty({title='Nothing here yet',description='Your next exchange starts with a little discovery.',to='/items',action='Explore items'}){return <div className="empty"><Package size={34}/><h3>{title}</h3><p>{description}</p>{to&&<Link className="button" to={to}>{action}<ArrowUpRight size={16}/></Link>}</div>}
-export function Loading(){return <div className="skeleton-grid" aria-label="Loading" aria-busy="true">{[1,2,3,4,5,6,7,8].map(x=><div key={x} className="skeleton" style={{animationDelay:`${(x-1)*100}ms`}}/>)}</div>}
-export function DataState({loading,error,children}){return loading?<Loading/>:error?<Empty title="We couldn’t load this" description={error} to={null}/>:children}
-export function PageHead({eyebrow,title,description,children}){return <div className="page-head"><div>{eyebrow&&<p className="eyebrow">{eyebrow}</p>}<h1>{title}</h1>{description&&<p>{description}</p>}</div>{children}</div>}
-export function Modal({title,children,onClose}){const ref=useRef();useEffect(()=>{const prev=document.activeElement;ref.current.showModal();const close=e=>{if(e.key==='Escape'){e.preventDefault();onClose()}};ref.current.addEventListener('keydown',close);return()=>prev?.focus()},[]);return <dialog ref={ref} className="modal" onClick={e=>{if(e.target===ref.current)onClose()}}><header><h2>{title}</h2><button aria-label="Close" className="icon-button" onClick={onClose}><X/></button></header>{children}</dialog>}
-export function ItemCard({item,onSaved}){const {user,setToast,act}=useApp();async function save(e){e.preventDefault();if(!user)return setToast('Sign in to save an item');try{await act(()=>api[item.saved?'delete':'post'](`/items/${item.id}/favorite`),item.saved?'Removed from saved items':'Item saved');onSaved?.()}catch{}}return <article className="item-card" data-tilt data-reveal><Link className="item-photo" to={`/items/${item.id}`}>{item.image?<img src={item.image} alt={item.name} loading="lazy"/>:<div className="no-photo"><Package size={40}/></div>}<Badge tone="availability">Available</Badge><span className="card-corner"><ArrowUpRight size={16}/></span></Link><button className={`save ${item.saved?'selected':''}`} aria-label={item.saved?'Unsave item':'Save item'} onClick={save}><Heart size={18} fill={item.saved?'currentColor':'none'}/></button><div className="item-info"><div className="item-meta">{item.category}<span>{item.item_condition?.toLowerCase()}</span></div><Link to={`/items/${item.id}`}><h3>{item.name}</h3></Link><p className="location"><MapPin size={13}/>{item.location}</p><div className="owner-row"><Avatar name={item.owner_name} src={item.owner_avatar}/><span>{item.owner_name?.split(' ')[0]} <ShieldCheck size={13}/></span><span className="rating"><Star size={13}/>{Number(item.average_rating)>0?Number(item.average_rating).toFixed(1):'New'}</span></div></div></article>}
-export function ItemGrid({items,refresh}){return items?.length?<div className="item-grid">{items.map(i=><ItemCard item={i} key={i.id} onSaved={refresh}/>)}</div>:<Empty title="No items match your filters"/>}
-export const formatDate=value=>value?new Date(value.includes('T')?value:value.replace(' ','T')+'Z').toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+
+import { Link } from 'react-router-dom';
+import {
+  X,
+  ArrowUpRight,
+  Package,
+  LoaderCircle,
+  ShieldCheck,
+  Heart,
+  MapPin,
+  Star
+} from 'lucide-react';
+import { useEffect, useRef } from 'react';
+
+import { useApp } from '../../context/AppContext';
+import { api } from '../../api/client';
+
+// ============================================
+// IMAGE URL CONFIGURATION
+// ============================================
+
+const API_ORIGIN = (
+  import.meta.env.VITE_API_URL || 'http://localhost:3001'
+)
+  .replace(/\/+$/, '')
+  .replace(/\/api$/, '');
+
+function getImageUrl(url) {
+  if (!url) return '';
+
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  return `${API_ORIGIN}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+// ============================================
+// BUTTON
+// ============================================
+
+export function Button({
+  children,
+  busy,
+  variant = '',
+  ...props
+}) {
+  return (
+    <button
+      className={`button ${variant}`}
+      disabled={busy || props.disabled}
+      {...props}
+    >
+      {busy && <LoaderCircle size={16} className="spin" />}
+      {children}
+    </button>
+  );
+}
+
+// ============================================
+// FIELD
+// ============================================
+
+export function Field({ label, children, ...props }) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      {children || <input {...props} />}
+    </label>
+  );
+}
+
+// ============================================
+// BADGE
+// ============================================
+
+export function Badge({ children, tone = '' }) {
+  return (
+    <span className={`badge ${tone}`}>
+      {String(children || '').replaceAll('_', ' ')}
+    </span>
+  );
+}
+
+// ============================================
+// AVATAR
+// ============================================
+
+export function Avatar({ name = '', src, size = '' }) {
+  const imageUrl = getImageUrl(src);
+
+  return imageUrl ? (
+    <img
+      className={`avatar ${size}`}
+      src={imageUrl}
+      alt={name}
+    />
+  ) : (
+    <span className={`avatar ${size}`}>
+      {name.split(' ').map(x => x[0]).slice(0, 2).join('')}
+    </span>
+  );
+}
+
+// ============================================
+// EMPTY STATE
+// ============================================
+
+export function Empty({
+  title = 'Nothing here yet',
+  description = 'Your next exchange starts with a little discovery.',
+  to = '/items',
+  action = 'Explore items'
+}) {
+  return (
+    <div className="empty">
+      <Package size={34} />
+      <h3>{title}</h3>
+      <p>{description}</p>
+
+      {to && (
+        <Link className="button" to={to}>
+          {action}
+          <ArrowUpRight size={16} />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// LOADING
+// ============================================
+
+export function Loading() {
+  return (
+    <div
+      className="skeleton-grid"
+      aria-label="Loading"
+      aria-busy="true"
+    >
+      {[1, 2, 3, 4, 5, 6, 7, 8].map(x => (
+        <div
+          key={x}
+          className="skeleton"
+          style={{ animationDelay: `${(x - 1) * 100}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ============================================
+// DATA STATE
+// ============================================
+
+export function DataState({ loading, error, children }) {
+  return loading ? (
+    <Loading />
+  ) : error ? (
+    <Empty
+      title="We couldn’t load this"
+      description={error}
+      to={null}
+    />
+  ) : (
+    children
+  );
+}
+
+// ============================================
+// PAGE HEADER
+// ============================================
+
+export function PageHead({
+  eyebrow,
+  title,
+  description,
+  children
+}) {
+  return (
+    <div className="page-head">
+      <div>
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+      </div>
+
+      {children}
+    </div>
+  );
+}
+
+// ============================================
+// MODAL
+// ============================================
+
+export function Modal({ title, children, onClose }) {
+  const ref = useRef();
+
+  useEffect(() => {
+    const prev = document.activeElement;
+
+    ref.current.showModal();
+
+    const close = e => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+
+    ref.current.addEventListener('keydown', close);
+
+    return () => {
+      ref.current?.removeEventListener('keydown', close);
+      prev?.focus();
+    };
+  }, []);
+
+  return (
+    <dialog
+      ref={ref}
+      className="modal"
+      onClick={e => {
+        if (e.target === ref.current) onClose();
+      }}
+    >
+      <header>
+        <h2>{title}</h2>
+
+        <button
+          aria-label="Close"
+          className="icon-button"
+          onClick={onClose}
+        >
+          <X />
+        </button>
+      </header>
+
+      {children}
+    </dialog>
+  );
+}
+
+// ============================================
+// ITEM CARD
+// ============================================
+
+export function ItemCard({ item, onSaved }) {
+  const { user, setToast, act } = useApp();
+
+  // Support both API image formats
+  const rawImage =
+    item.image ||
+    item.images?.[0]?.url ||
+    '';
+
+  // Convert relative image path into backend URL
+  const imageUrl = getImageUrl(rawImage);
+
+  async function save(e) {
+    e.preventDefault();
+
+    if (!user) {
+      return setToast('Sign in to save an item');
+    }
+
+    try {
+      await act(
+        () => api[item.saved ? 'delete' : 'post'](
+          `/items/${item.id}/favorite`
+        ),
+        item.saved
+          ? 'Removed from saved items'
+          : 'Item saved'
+      );
+
+      onSaved?.();
+    } catch {}
+  }
+
+  return (
+    <article className="item-card" data-tilt data-reveal>
+
+      <Link
+        className="item-photo"
+        to={`/items/${item.id}`}
+      >
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={item.name}
+            loading="lazy"
+            onError={e => {
+              console.error(
+                'Failed to load item image:',
+                imageUrl
+              );
+
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="no-photo">
+            <Package size={40} />
+          </div>
+        )}
+
+        <Badge tone="availability">
+          Available
+        </Badge>
+
+        <span className="card-corner">
+          <ArrowUpRight size={16} />
+        </span>
+      </Link>
+
+      <button
+        className={`save ${item.saved ? 'selected' : ''}`}
+        aria-label={
+          item.saved ? 'Unsave item' : 'Save item'
+        }
+        onClick={save}
+      >
+        <Heart
+          size={18}
+          fill={item.saved ? 'currentColor' : 'none'}
+        />
+      </button>
+
+      <div className="item-info">
+
+        <div className="item-meta">
+          {item.category}
+          <span>
+            {item.item_condition?.toLowerCase()}
+          </span>
+        </div>
+
+        <Link to={`/items/${item.id}`}>
+          <h3>{item.name}</h3>
+        </Link>
+
+        <p className="location">
+          <MapPin size={13} />
+          {item.location}
+        </p>
+
+        <div className="owner-row">
+
+          <Avatar
+            name={item.owner_name}
+            src={item.owner_avatar}
+          />
+
+          <span>
+            {item.owner_name?.split(' ')[0]}
+            {' '}
+            <ShieldCheck size={13} />
+          </span>
+
+          <span className="rating">
+            <Star size={13} />
+            {Number(item.average_rating) > 0
+              ? Number(item.average_rating).toFixed(1)
+              : 'New'}
+          </span>
+
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// ============================================
+// ITEM GRID
+// ============================================
+
+export function ItemGrid({ items, refresh }) {
+  return items?.length ? (
+    <div className="item-grid">
+      {items.map(i => (
+        <ItemCard
+          item={i}
+          key={i.id}
+          onSaved={refresh}
+        />
+      ))}
+    </div>
+  ) : (
+    <Empty title="No items match your filters" />
+  );
+}
+
+// ============================================
+// DATE FORMATTER
+// ============================================
+
+export const formatDate = value =>
+  value
+    ? new Date(
+        value.includes('T')
+          ? value
+          : value.replace(' ', 'T') + 'Z'
+      ).toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    : '—';

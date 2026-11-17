@@ -1,7 +1,8 @@
 
-import {Router} from 'express';
+import { Router } from 'express';
 import multer from 'multer';
-import {rateLimit} from 'express-rate-limit';
+import { rateLimit } from 'express-rate-limit';
+import { v2 as cloudinary } from 'cloudinary';
 
 import {
   authenticateUser as auth,
@@ -16,7 +17,7 @@ import {
   id
 } from '../utils/core.js';
 
-import {query} from '../config/db.js';
+import { query } from '../config/db.js';
 
 import * as account from '../controllers/authController.js';
 import * as users from '../controllers/userController.js';
@@ -27,11 +28,35 @@ import * as admin from '../controllers/adminController.js';
 import * as borrow from '../services/borrowing.js';
 import * as items from '../controllers/itemController.js';
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
 
 export const router = Router();
+
+// ==========================================
+// CLOUDINARY CONFIGURATION
+// ==========================================
+
+const cloudinaryConfigured = Boolean(
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET &&
+  process.env.CLOUDINARY_CLOUD_NAME
+);
+
+if (cloudinaryConfigured) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+  });
+}
+
+// ==========================================
+// RATE LIMITING
+// ==========================================
 
 const authLimit = rateLimit({
   windowMs: 15 * 60000,
@@ -40,20 +65,18 @@ const authLimit = rateLimit({
   legacyHeaders: false
 });
 
-
 // ==========================================
 // HEALTH CHECK AND CATEGORIES
 // ==========================================
 
 router.get('/health', wrap(async (req, res) => {
   await query('SELECT 1');
-  ok(res, {database: 'connected'});
+  ok(res, { database: 'connected' });
 }));
 
 router.get('/categories', (req, res) =>
   ok(res, items.categories)
 );
-
 
 // ==========================================
 // AUTHENTICATION
@@ -77,7 +100,6 @@ router.post(
   wrap((req, res) => account.consume(req, res, 'VERIFY'))
 );
 
-
 // ==========================================
 // OPTIONAL AUTHENTICATION
 // ==========================================
@@ -91,7 +113,7 @@ const optional = (req, res, next) => {
   auth(req, res, error => {
     if (error?.status === 401) {
       if (hasCookie) {
-        res.clearCookie('campusshare', {path: '/'});
+        res.clearCookie('campusshare', { path: '/' });
       }
 
       return next();
@@ -100,7 +122,6 @@ const optional = (req, res, next) => {
     next(error);
   });
 };
-
 
 // ==========================================
 // ITEMS AND MARKETPLACE
@@ -119,7 +140,6 @@ router.put('/items/:id', auth, verified, wrap(items.save));
 router.patch('/items/:id/status', auth, wrap(items.status));
 
 router.delete('/items/:id', auth, wrap(items.status));
-
 
 // ==========================================
 // USER ACCOUNT AND PROFILES
@@ -180,9 +200,8 @@ router.delete('/users/me', auth, wrap(async (req, res) => {
     [req.user.id]
   );
 
-  ok(res, {message: 'Account deactivated'});
+  ok(res, { message: 'Account deactivated' });
 }));
-
 
 // ==========================================
 // FAVORITES AND SAVED ITEMS
@@ -201,7 +220,7 @@ router.post('/items/:id/favorite', auth, wrap(async (req, res) => {
     [req.user.id, item.id]
   );
 
-  ok(res, {saved: true});
+  ok(res, { saved: true });
 }));
 
 router.delete('/items/:id/favorite', auth, wrap(async (req, res) => {
@@ -210,7 +229,7 @@ router.delete('/items/:id/favorite', auth, wrap(async (req, res) => {
     [req.user.id, id(req.params.id)]
   );
 
-  ok(res, {saved: false});
+  ok(res, { saved: false });
 }));
 
 router.get('/saved', auth, wrap(async (req, res) => {
@@ -234,7 +253,6 @@ router.get('/saved', auth, wrap(async (req, res) => {
     [req.user.id]
   ));
 }));
-
 
 // ==========================================
 // BORROW REQUESTS
@@ -266,7 +284,6 @@ for (const action of ['accept', 'reject', 'cancel']) {
   );
 }
 
-
 // ==========================================
 // TRANSACTIONS
 // ==========================================
@@ -287,7 +304,6 @@ router.post('/transactions/:id/extension', auth, wrap(transactions.extension));
 
 router.post('/reviews', auth, wrap(transactions.review));
 
-
 // ==========================================
 // CONVERSATIONS AND MESSAGES
 // ==========================================
@@ -297,7 +313,6 @@ router.get('/conversations', auth, wrap(community.conversations));
 router.route('/conversations/:id/messages')
   .get(auth, wrap(community.messages))
   .post(auth, wrap(community.messages));
-
 
 // ==========================================
 // NOTIFICATIONS
@@ -319,7 +334,6 @@ router.put(
   wrap(community.notifications)
 );
 
-
 // ==========================================
 // PRIVATE CIRCLES
 // ==========================================
@@ -334,7 +348,6 @@ router.route('/circles/:id/members')
   .post(auth, wrap(community.membership))
   .delete(auth, wrap(community.membership));
 
-
 // ==========================================
 // DISPUTES AND REPORTS
 // ==========================================
@@ -344,7 +357,6 @@ router.post('/disputes', auth, wrap(community.dispute));
 router.get('/disputes/:id', auth, wrap(community.dispute));
 
 router.post('/reports', auth, wrap(community.report));
-
 
 // ==========================================
 // ITEM ANALYTICS
@@ -376,9 +388,8 @@ router.get('/items/:id/analytics', auth, wrap(async (req, res) => {
     [item.id]
   );
 
-  ok(res, {...item, ...favorites, activity: rows});
+  ok(res, { ...item, ...favorites, activity: rows });
 }));
-
 
 // ==========================================
 // ADMIN ROUTES
@@ -395,7 +406,6 @@ router.get('/admin/:resource', wrap(admin.list));
 router.put('/admin/disputes/:id/resolve', wrap(admin.resolve));
 
 router.put('/admin/:resource/:id/status', wrap(admin.moderate));
-
 
 // ==========================================
 // IMAGE UPLOADS
@@ -420,7 +430,10 @@ const upload = multer({
 router.post(
   '/uploads',
   auth,
-  rateLimit({windowMs: 60000, limit: 15}),
+  rateLimit({
+    windowMs: 60000,
+    limit: 15
+  }),
   upload.single('image'),
   wrap(async (req, res) => {
 
@@ -432,6 +445,7 @@ router.post(
 
     const bytes = req.file.buffer;
 
+    // Verify actual image file signature.
     const jpeg =
       bytes[0] === 255 && bytes[1] === 216;
 
@@ -444,39 +458,103 @@ router.post(
       bytes.subarray(0, 4).toString() === 'RIFF' &&
       bytes.subarray(8, 12).toString() === 'WEBP';
 
-    ensure(jpeg || png || webp, 400, 'Invalid image data');
+    ensure(
+      jpeg || png || webp,
+      400,
+      'Invalid image data'
+    );
 
     let result;
-    if (process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET && process.env.CLOUDINARY_CLOUD_NAME) {
-      // Cloudinary upload
+
+    // ========================================
+    // CLOUDINARY STORAGE
+    // ========================================
+
+    if (cloudinaryConfigured) {
       result = await new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(
           {
             folder: `campusshare/${req.user.id}`,
             resource_type: 'image',
             transformation: [
-              {width: 1600, height: 1600, crop: 'limit'},
-              {quality: 'auto', fetch_format: 'auto'}
+              {
+                width: 1600,
+                height: 1600,
+                crop: 'limit'
+              },
+              {
+                quality: 'auto',
+                fetch_format: 'auto'
+              }
             ]
           },
-          (error, uploadResult) =>
-            error ? reject(error) : resolve(uploadResult)
+          (error, uploadResult) => {
+            if (error) {
+              return reject(error);
+            }
+
+            resolve(uploadResult);
+          }
         ).end(bytes);
       });
-    } else {
-      // Fallback to local storage
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
-      const uploadsDir = path.resolve(__dirname, '../../public/uploads');
-      await fs.promises.mkdir(uploadsDir, {recursive: true});
-      const filename = `${Date.now()}-${req.file.originalname}`;
-      const filepath = path.join(uploadsDir, filename);
-      await fs.promises.writeFile(filepath, bytes);
-      result = { secure_url: `/uploads/${filename}`, public_id: null };
     }
 
+    // ========================================
+    // LOCAL STORAGE FALLBACK
+    // ========================================
+
+    else {
+      const currentFile = fileURLToPath(import.meta.url);
+      const currentDir = path.dirname(currentFile);
+
+      const uploadsDir = path.resolve(
+        currentDir,
+        '../../public/uploads'
+      );
+
+      await fs.promises.mkdir(uploadsDir, {
+        recursive: true
+      });
+
+      const extension = path.extname(req.file.originalname).toLowerCase();
+
+      const allowedExtensions = {
+        'image/jpeg': '.jpg',
+        'image/png': '.png',
+        'image/webp': '.webp'
+      };
+
+      const safeExtension =
+        allowedExtensions[req.file.mimetype];
+
+      const filename = `${Date.now()}-${randomUUID()}${safeExtension}`;
+
+      const filepath = path.join(uploadsDir, filename);
+
+      await fs.promises.writeFile(filepath, bytes);
+
+      result = {
+        secure_url: `/uploads/${filename}`,
+
+        // MySQL uploads.public_id is NOT NULL.
+        public_id: `local-${req.user.id}-${randomUUID()}`
+      };
+    }
+
+    // ========================================
+    // SAVE UPLOAD RECORD IN DATABASE
+    // ========================================
+
+    ensure(
+      result?.secure_url && result?.public_id,
+      500,
+      'Image storage did not return a valid upload result'
+    );
+
     const record = await query(
-      'INSERT INTO uploads(user_id,url,public_id,kind) VALUES(?,?,?,?)',
+      `INSERT INTO uploads
+       (user_id, url, public_id, kind)
+       VALUES (?, ?, ?, ?)`,
       [
         req.user.id,
         result.secure_url,
@@ -485,9 +563,13 @@ router.post(
       ]
     );
 
-    ok(res, {
-      id: record.insertId,
-      url: result.secure_url
-    }, 201);
+    ok(
+      res,
+      {
+        id: record.insertId,
+        url: result.secure_url
+      },
+      201
+    );
   })
 );
