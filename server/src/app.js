@@ -205,6 +205,16 @@ app.use(
   )
 );
 
+// Serve uploaded images
+app.use(
+  '/uploads',
+  express.static(
+    fileURLToPath(
+      new URL('../../public/uploads', import.meta.url)
+    )
+  )
+);
+
 app.use(
   '/404',
   express.static(
