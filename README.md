@@ -74,6 +74,14 @@ RAZORPAY_KEY_SECRET=your_test_secret
 
 The browser requests an order from the server, then opens Razorpay’s hosted checkout. CampusShare verifies the signature and retrieves the payment from Razorpay before marking it verified. Secrets never enter client JavaScript, and the application rejects live-mode keys.
 
+The hosted checkout displays **UPI** and **Card** as the two supported methods for this project. In Test Mode, use Razorpay's test card details or its supported UPI test flow. On desktop, UPI should use the Razorpay QR/app flow; manual UPI ID collection may not be available. If a payment is only authorised, the backend captures and verifies it before updating CampusShare.
+
+After adding the keys, run the database setup once so older local databases receive the payment columns:
+
+```sh
+npm --prefix server run db:setup
+```
+
 If Test keys are absent, the checkout clearly switches to a safe animated college demonstration. No bank, card network, or gateway is contacted.
 
 ## Containers

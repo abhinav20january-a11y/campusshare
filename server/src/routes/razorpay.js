@@ -6,7 +6,8 @@ import { wrap, ok, ensure, id } from '../utils/core.js';
 import {
   configuration,
   razorpay,
-  validSignature
+  validSignature,
+  confirmedPayment
 } from '../services/razorpay.js';
 
 export const razorpayRoutes = Router();
@@ -268,24 +269,15 @@ razorpayRoutes.post(
       'Payment signature verification failed'
     );
 
-    // Confirm payment directly with Razorpay.
-    const payment = await razorpay(
-      '/payments/' + razorpay_payment_id
-    );
-
-    ensure(
-      payment.order_id === order.order_id &&
-        payment.amount === order.amount &&
-        payment.currency === order.currency,
-      400,
-      'Payment details do not match'
-    );
-
-    // An authorized payment is not treated as completed.
-    ensure(
-      payment.status === 'captured',
-      409,
-      'Payment has not been captured yet'
+    // Confirm the payment with Razorpay. If the account is configured for
+    // manual capture, capture the authorized payment before recording it.
+    const payment = await confirmedPayment(
+      razorpay_payment_id,
+      {
+        orderId: order.order_id,
+        amount: order.amount,
+        currency: order.currency
+      }
     );
 
     // Update payment and transaction together.

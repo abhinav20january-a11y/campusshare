@@ -5,9 +5,13 @@ import { ensure } from '../utils/core.js';
 export function configuration() {
   const key = process.env.RAZORPAY_KEY_ID;
   const secret = process.env.RAZORPAY_KEY_SECRET;
+  const testKey = /^rzp_test_[a-zA-Z0-9]{8,}$/.test(key || '');
+  const usableSecret = typeof secret === 'string' &&
+    secret.length >= 8 &&
+    !/replace|your[_-]?test/i.test(secret);
 
   return {
-    configured: Boolean(key?.startsWith('rzp_test_') && secret),
+    configured: Boolean(testKey && usableSecret),
     mode: 'test',
     currency: 'INR'
   };
@@ -67,4 +71,44 @@ export async function razorpay(path, method = 'GET', body) {
   );
 
   return data;
+}
+
+// Fetch a payment from Razorpay, validate it against the order stored by
+// CampusShare and capture it when the merchant account uses manual capture.
+// Card and UPI payments can therefore complete under either capture setting.
+export async function confirmedPayment(paymentId, expected) {
+  ensure(
+    typeof paymentId === 'string' && /^pay_[a-zA-Z0-9]+$/.test(paymentId),
+    400,
+    'Invalid payment ID'
+  );
+
+  let payment = await razorpay('/payments/' + paymentId);
+
+  ensure(
+    payment.order_id === expected.orderId &&
+      Number(payment.amount) === Number(expected.amount) &&
+      payment.currency === expected.currency,
+    400,
+    'Payment details do not match'
+  );
+
+  if (payment.status === 'authorized') {
+    payment = await razorpay(
+      '/payments/' + paymentId + '/capture',
+      'POST',
+      {
+        amount: Number(expected.amount),
+        currency: expected.currency
+      }
+    );
+  }
+
+  ensure(
+    payment.status === 'captured',
+    409,
+    'Payment is not captured. Check the Razorpay dashboard before retrying.'
+  );
+
+  return payment;
 }

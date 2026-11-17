@@ -4,14 +4,16 @@ import { query } from '../src/config/db.js';
 import { notify } from '../src/services/events.js';
 
 jest.mock('../src/config/db.js', () => ({
-  query: jest.fn()
+  query: jest.fn(),
+  atomic: fn => fn({})
 }));
 jest.mock('../src/services/events.js', () => ({
   notify: jest.fn()
 }));
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  query.mockReset();
+  notify.mockReset();
 });
 
 test('owner rejects a pending request', async () => {

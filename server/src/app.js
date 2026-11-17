@@ -13,9 +13,7 @@ import { existsSync } from 'node:fs';
 import { router } from './routes/index.js';
 import { production } from './config/env.js';
 
-import { demoPayments } from './routes/demoPayments.js';
 import { razorpayRoutes } from './routes/razorpay.js';
-import { paymentsRoutes } from './routes/payments.js';
 
 export const app = express();
 
@@ -26,9 +24,7 @@ app.disable('x-powered-by');
 // ROUTE CONFIGURATION
 // ============================================
 
-router.use('/transactions', demoPayments);
 router.use('/transactions', razorpayRoutes);
-router.use('/payments', paymentsRoutes);
 
 // ============================================
 // CORS CONFIGURATION
@@ -73,7 +69,9 @@ app.use(
           "'self'",
           'data:',
           'blob:',
-          'https://res.cloudinary.com'
+          'https://res.cloudinary.com',
+          'https://*.razorpay.com',
+          'https://*.razorpay.in'
         ],
 
         styleSrc: [
@@ -83,19 +81,25 @@ app.use(
 
         scriptSrc: [
           "'self'",
-          'https://checkout.razorpay.com'
+          'https://checkout.razorpay.com',
+          'https://*.razorpay.com',
+          'https://*.razorpay.in'
         ],
 
         connectSrc: [
           "'self'",
           'https://api.razorpay.com',
-          'https://lumberjack.razorpay.com'
+          'https://lumberjack.razorpay.com',
+          'https://*.razorpay.com',
+          'https://*.razorpay.in'
         ],
 
         frameSrc: [
           "'self'",
           'https://api.razorpay.com',
-          'https://checkout.razorpay.com'
+          'https://checkout.razorpay.com',
+          'https://*.razorpay.com',
+          'https://*.razorpay.in'
         ],
 
         objectSrc: ["'none'"]

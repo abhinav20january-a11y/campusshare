@@ -25,7 +25,10 @@ jest.mock('../src/utils/core.js', () => ({
  * Helper to reset all mocks before each test.
  */
 beforeEach(() => {
-  jest.clearAllMocks();
+  query.mockReset();
+  notify.mockReset();
+  event.mockReset();
+  updateTrust.mockReset();
 });
 
 test('createRequest rejects borrowing own item', async () => {
@@ -42,8 +45,11 @@ test('requestAction accept creates transaction and notifies borrower', async () 
     .mockImplementationOnce(() => [{ item_id: 20 }]) // request lookup
     .mockImplementationOnce(() => [{ id: 20, owner_id: 2, status: 'ACTIVE', max_borrow_duration: 72 }]) // item lock
     .mockImplementationOnce(() => [{ id: 30, status: 'REQUESTED', borrower_id: 3, owner_id: 2, start_time: '2025-01-01', end_time: '2025-01-02' }]) // borrow request
+    .mockImplementationOnce(() => []) // no custom availability windows
+    .mockImplementationOnce(() => []) // no overlapping transaction
     .mockImplementationOnce(() => []) // update request status
-    .mockImplementationOnce(() => [{ insertId: 5 }]); // insert transaction
+    .mockImplementationOnce(() => ({ insertId: 5 })) // insert transaction
+    .mockImplementationOnce(() => []); // optional receipt lookup (email is non-blocking)
 
   const owner = { id: 2, role: 'USER' };
   const result = await requestAction(owner, 30, 'accept');
@@ -54,8 +60,9 @@ test('requestAction accept creates transaction and notifies borrower', async () 
 test('handover updates status to ACTIVE and notifies borrower', async () => {
   // transactionFor mock via atomic db stub
   query
-    .mockImplementationOnce(() => [{ id: 40, owner_id: 2, borrower_id: 3, status: 'HANDOVER_PENDING', owner_handover: null, borrower_handover: null, item_id: 55 }]) // transaction lock
-    .mockImplementationOnce(() => []); // update handover
+    .mockImplementationOnce(() => [{ id: 40, owner_id: 2, borrower_id: 3, status: 'HANDOVER_PENDING', owner_handover: null, borrower_handover: '2026-11-01 10:00:00', item_id: 55, payment_status: 'PAID', borrowing_fee: 10, security_deposit: 100 }]) // transaction lock
+    .mockImplementationOnce(() => []) // update handover
+    .mockImplementationOnce(() => []); // update ACTIVE
 
   const owner = { id: 2, role: 'USER' };
   const result = await handover(owner, 40, { evidence: [] });
@@ -82,20 +89,12 @@ test('requestAction unauthorized user cannot accept request', async () => {
 });
 
 test('requestAction duplicate accept throws 409', async () => {
-  // First accept succeeds
-  query
-    .mockImplementationOnce(() => [{ item_id: 20 }])
-    .mockImplementationOnce(() => [{ id: 20, owner_id: 2, status: 'ACTIVE', max_borrow_duration: 72 }])
-    .mockImplementationOnce(() => [{ id: 30, status: 'REQUESTED', borrower_id: 3, owner_id: 2, start_time: '2025-01-01', end_time: '2025-01-02' }])
-    .mockImplementationOnce(() => [])
-    .mockImplementationOnce(() => [{ insertId: 5 }]);
-  const owner = { id: 2, role: 'USER' };
-  await requestAction(owner, 30, 'accept');
-  // Second accept should fail
+  // The request has already been accepted.
   query
     .mockImplementationOnce(() => [{ item_id: 20 }])
     .mockImplementationOnce(() => [{ id: 20, owner_id: 2, status: 'ACTIVE', max_borrow_duration: 72 }])
     .mockImplementationOnce(() => [{ id: 30, status: 'ACCEPTED', borrower_id: 3, owner_id: 2, start_time: '2025-01-01', end_time: '2025-01-02' }]);
+  const owner = { id: 2, role: 'USER' };
   await expect(requestAction(owner, 30, 'accept')).rejects.toMatchObject({ status: 409 });
 });
 

@@ -4,6 +4,23 @@ const db=await mysql.createConnection({host:process.env.DB_HOST||'127.0.0.1',por
 await db.query(`CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);await db.query(`USE \`${database}\``);await db.query(await readFile(new URL('./schema.sql',import.meta.url),'utf8'));
 await db.query(await readFile(new URL('./demo-payments.sql',import.meta.url),'utf8'));
 await db.query(await readFile(new URL('./razorpay.sql',import.meta.url),'utf8'));
+
+// CREATE TABLE IF NOT EXISTS does not update databases created by older
+// versions, so add the payment columns when they are missing.
+async function addColumn(table,column,definition){
+ const [rows]=await db.query(
+  'SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=? AND TABLE_NAME=? AND COLUMN_NAME=? LIMIT 1',
+  [database,table,column]
+ );
+ if(!rows.length)await db.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
+}
+await addColumn('items','borrowing_fee','DECIMAL(10,2) NOT NULL DEFAULT 0.00');
+await addColumn('items','security_deposit','DECIMAL(10,2) NOT NULL DEFAULT 0.00');
+await addColumn('transactions','borrowing_fee','DECIMAL(10,2) NOT NULL DEFAULT 0.00');
+await addColumn('transactions','security_deposit','DECIMAL(10,2) NOT NULL DEFAULT 0.00');
+await addColumn('transactions','payment_status',"ENUM('PENDING','PAID','FAILED','REFUNDED') NOT NULL DEFAULT 'PENDING'");
+await addColumn('demo_payments','method',"ENUM('card','upi') NOT NULL DEFAULT 'upi'");
+await addColumn('demo_payments','summary','VARCHAR(100)');
 const [[{n}]]=await db.query('SELECT COUNT(*) n FROM users');
 if(!n){
  const names=['Aarav Sharma','Riya Kapoor','CampusShare Admin','Kabir Mehta','Ananya Rao','Arjun Patel','Meera Iyer','Dev Shah','Sara Khan','Aditya Verma','Ishaan Nair','Nisha Das','Rohan Gupta','Tara Singh','Zoya Ali','Vihaan Joshi','Diya Menon','Karan Sethi','Aditi Jain','Samar Roy','Mehak Das','Varun Nair','Neha Singh','Isha Bose','Aryan Sen','Priya Bhat','Yash Kumar','Avni Desai','Rehan Khan','Sana Malik','Ritvik Saha','Mira Thomas','Nikhil Rao','Lavanya Reddy','Aman Dutta','Suhana Gill','Dhruv Bansal','Kavya Shah','Om Kulkarni','Rhea Dsouza'];
@@ -14,4 +31,5 @@ if(!n){
  await db.query(await readFile(new URL('./seed.sql',import.meta.url),'utf8'));
  console.log('Created 40 users, 96 listings and connected development activity.');
 }else console.log('Schema checked; existing data preserved.');
+await db.query("UPDATE transactions SET payment_status='PAID' WHERE borrowing_fee=0 AND security_deposit=0 AND payment_status='PENDING'");
 await db.end();

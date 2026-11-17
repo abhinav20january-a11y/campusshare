@@ -9,9 +9,10 @@ import {
 } from 'lucide-react';
 
 import { useData } from '../../hooks/useData';
+import { useApp } from '../../context/AppContext';
 import { api, errorMessage } from '../../api/client';
+import { buildCheckoutOptions } from '../../payments/razorpayCheckout';
 import { Button, Modal } from './UI';
-import './demo-payment.css';
 
 let checkoutScript;
 
@@ -57,12 +58,9 @@ function formatAmount(paise) {
 }
 
 export default function RazorpayPayment({ transaction, owner }) {
+  const { user } = useApp();
   const gateway = useData(
     `/transactions/${transaction.id}/payment`
-  );
-
-  const demo = useData(
-    `/transactions/${transaction.id}/demo-payment`
   );
 
   const [open, setOpen] = useState(false);
@@ -70,16 +68,12 @@ export default function RazorpayPayment({ transaction, owner }) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [flipped, setFlipped] = useState(false);
-
+  const [preferredMethod, setPreferredMethod] = useState('upi');
   const configured = Boolean(gateway.data?.configured);
 
   const paid =
     gateway.data?.payment_status === 'PAID' ||
     gateway.data?.order?.status === 'captured';
-
-  const demoPaid = Boolean(demo.data);
-
-  const complete = paid || demoPaid;
 
   const allowed = [
     'ACCEPTED',
@@ -90,7 +84,7 @@ export default function RazorpayPayment({ transaction, owner }) {
 
   const amount = formatAmount(amountPaise);
 
-  if (!allowed && !gateway.data?.order && !demo.data) {
+  if (!allowed && !gateway.data?.order) {
     return null;
   }
 
@@ -105,32 +99,6 @@ export default function RazorpayPayment({ transaction, owner }) {
   function close() {
     if (!['launching', 'processing'].includes(stage)) {
       setOpen(false);
-    }
-  }
-
-  async function runDemo() {
-    setStage('launching');
-    setError('');
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 900));
-
-      setStage('processing');
-
-      if (!demo.data) {
-        await api.post(
-          `/transactions/${transaction.id}/demo-payment`,
-          {}
-        );
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 1250));
-
-      demo.refresh();
-      setStage('success');
-    } catch (e) {
-      setError(errorMessage(e));
-      setStage('ready');
     }
   }
 
@@ -172,20 +140,13 @@ export default function RazorpayPayment({ transaction, owner }) {
         return;
       }
 
-      const payment = new window.Razorpay({
-        key: order.key,
-        order_id: order.order_id,
-        amount: order.amount,
-        currency: order.currency,
-
-        name: 'CampusShare',
-
-        description: 'Verified campus exchange',
-
-        theme: {
-          color: '#4f7cff'
+      const payment = new window.Razorpay(buildCheckoutOptions({
+        order: {
+          ...order,
+          transaction_id: transaction.id
         },
-
+        user,
+        preferredMethod,
         handler: async function (paymentResponse) {
           try {
             // Verify payment through our backend.
@@ -226,17 +187,15 @@ export default function RazorpayPayment({ transaction, owner }) {
           }
         },
 
-        modal: {
-          ondismiss: function () {
-            setStage('ready');
-            setNotice(
-              'Razorpay Checkout was closed. Payment has not been confirmed.'
-            );
+        onDismiss: function () {
+          setStage('ready');
+          setNotice(
+            'Razorpay Checkout was closed. Payment has not been confirmed.'
+          );
 
-            setOpen(true);
-          }
+          setOpen(true);
         }
-      });
+      }));
 
       payment.on('payment.failed', function (response) {
         setStage('ready');
@@ -286,11 +245,7 @@ export default function RazorpayPayment({ transaction, owner }) {
 
           <div>
             <strong>Secure test payment</strong>
-            <p>
-              {configured
-                ? 'Powered by Razorpay Checkout'
-                : 'Animated college demonstration'}
-            </p>
+            <p>Powered by Razorpay Checkout</p>
           </div>
         </div>
 
@@ -309,23 +264,17 @@ export default function RazorpayPayment({ transaction, owner }) {
         <p className="error">{error}</p>
       )}
 
-      {complete ? (
+      {paid ? (
 
         <div className="payment-complete">
           <CheckCircle2 />
 
           <div>
-            <strong>
-              {paid
-                ? 'Razorpay payment verified'
-                : 'Test payment completed'}
-            </strong>
+            <strong>Razorpay payment verified</strong>
 
             <p>
-              {paid
-                ? `Payment ${gateway.data?.order?.payment_id || ''}`
-                : `Demo receipt ${demo.data?.reference || 'saved'}`}
-              {' '}· no live charge
+              Payment {gateway.data?.order?.payment_id || 'confirmed'}
+              {' '}· Test Mode
             </p>
           </div>
 
@@ -347,12 +296,14 @@ export default function RazorpayPayment({ transaction, owner }) {
 
         <button
           className="payment-cta"
-          disabled={gateway.loading || demo.loading}
+          disabled={gateway.loading || !configured}
           onClick={show}
         >
           <span>
             <LockKeyhole size={18} />
-            Continue to secure payment
+            {configured
+              ? 'Continue with Razorpay'
+              : 'Razorpay is temporarily unavailable'}
           </span>
 
           <b>
@@ -403,9 +354,7 @@ export default function RazorpayPayment({ transaction, owner }) {
               </h3>
 
               <p>
-                {paid
-                  ? 'Razorpay payment has been verified successfully by CampusShare.'
-                  : 'A demonstration receipt was saved. No real payment was made.'}
+                Razorpay verified the payment and CampusShare matched it to this exchange.
               </p>
 
               <Button
@@ -458,18 +407,18 @@ export default function RazorpayPayment({ transaction, owner }) {
                     <CreditCard size={30} />
 
                     <strong>
-                      4242&nbsp; 4242&nbsp; 4242&nbsp; 4242
+                      RAZORPAY&nbsp; TEST&nbsp; CHECKOUT
                     </strong>
 
                     <span className="card-bottom">
                       <span>
-                        DEMO STUDENT
-                        <small>CARD HOLDER</small>
+                        CARD OR UPI
+                        <small>PAYMENT METHOD</small>
                       </span>
 
                       <span>
-                        12/30
-                        <small>EXPIRES</small>
+                        INR
+                        <small>CURRENCY</small>
                       </span>
                     </span>
 
@@ -477,9 +426,9 @@ export default function RazorpayPayment({ transaction, owner }) {
 
                   <span className="payment-card-back">
                     <i />
-                    <b>123</b>
-                    <span>TEST SECURITY CODE</span>
-                    <small>NO REAL PAYMENT DETAILS</small>
+                    <b>SECURE</b>
+                    <span>HOSTED BY RAZORPAY</span>
+                    <small>PAYMENT DETAILS ARE ENTERED IN THE RAZORPAY WINDOW</small>
                   </span>
 
                 </button>
@@ -504,6 +453,27 @@ export default function RazorpayPayment({ transaction, owner }) {
 
               </div>
 
+              <div className="payment-method-choice" role="group" aria-label="Preferred payment method">
+                  <button
+                    type="button"
+                    className={preferredMethod === 'upi' ? 'active' : ''}
+                    onClick={() => setPreferredMethod('upi')}
+                    disabled={stage !== 'ready'}
+                  >
+                    <span>UPI</span>
+                    <small>App or QR</small>
+                  </button>
+                  <button
+                    type="button"
+                    className={preferredMethod === 'card' ? 'active' : ''}
+                    onClick={() => setPreferredMethod('card')}
+                    disabled={stage !== 'ready'}
+                  >
+                    <span>Card</span>
+                    <small>Credit or debit</small>
+                  </button>
+              </div>
+
               {error && (
                 <p className="error">{error}</p>
               )}
@@ -515,15 +485,14 @@ export default function RazorpayPayment({ transaction, owner }) {
               {!configured && (
                 <p className="gateway-note">
                   <ShieldCheck size={16} />
-                  Razorpay Test keys are not configured.
-                  This runs only the demonstration animation.
+                  Razorpay Test Mode is not available. Ask the project administrator to check the server configuration.
                 </p>
               )}
 
               <button
                 className="button full payment-launch"
-                disabled={stage !== 'ready'}
-                onClick={configured ? openRazorpay : runDemo}
+                disabled={stage !== 'ready' || !configured}
+                onClick={openRazorpay}
               >
 
                 <span>
@@ -531,9 +500,7 @@ export default function RazorpayPayment({ transaction, owner }) {
                     ? 'Preparing secure checkout…'
                     : stage === 'processing'
                     ? 'Waiting for verification…'
-                    : configured
-                    ? 'Open Razorpay Test Checkout'
-                    : 'Run animated test payment'}
+                    : 'Open Razorpay Test Checkout'}
                 </span>
 
                 <i />
@@ -543,9 +510,9 @@ export default function RazorpayPayment({ transaction, owner }) {
               <p className="payment-legal">
                 <LockKeyhole size={14} />
 
-                {configured
-                  ? 'Enter card or UPI details only inside Razorpay hosted checkout.'
-                  : 'Demonstration only · no bank, card network, or payment gateway is contacted.'}
+                {preferredMethod === 'upi'
+                  ? 'UPI opens securely in Razorpay using an available app or QR flow.'
+                  : 'Enter card details only inside the Razorpay-hosted checkout.'}
               </p>
 
             </div>
