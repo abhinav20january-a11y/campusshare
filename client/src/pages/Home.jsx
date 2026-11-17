@@ -121,14 +121,13 @@ export default function Home() {
                 </select>
               </label>
 
-              <button type="submit">Search</button>
+              <button type="submit" className="button">Search</button>
             </form>
 
             <Link className="button secondary" to="/items">
               Browse Marketplace
               <ArrowUpRight size={16} />
             </Link>
-
           </motion.div>
 
           {/* HERO IMAGE - SEPARATE FROM TEXT */}
@@ -149,30 +148,6 @@ export default function Home() {
 
         </div>
       </section>
-
-{/* CAMPUS CIRCLES */}
-<section className="objects-circles">
-  <div className="objects-section-title">
-    <h2>Private student communities</h2>
-    <Link className="button" to="/circles">
-      Explore circles
-      <ArrowUpRight size={17} />
-    </Link>
-  </div>
-  <p className="objects-lede">
-    Create invite‑only circles for clubs, hostels, batches or project teams and share items within a trusted group.
-  </p>
-</section>
-
-{/* SUSTAINABILITY */}
-<section className="objects-sustainability">
-  <div className="objects-section-title">
-    <h2>Sustainability on campus</h2>
-  </div>
-  <p className="objects-lede">
-    Borrowing and sharing reduce unnecessary purchases, lower waste and support a greener campus lifestyle.
-  </p>
-</section>
 
       {/* CATEGORIES */}
       <section
@@ -200,30 +175,6 @@ export default function Home() {
         ))}
       </section>
 
-{/* CAMPUS CIRCLES */}
-<section className="objects-circles">
-  <div className="objects-section-title">
-    <h2>Private student communities</h2>
-    <Link className="button" to="/circles">
-      Explore circles
-      <ArrowUpRight size={17} />
-    </Link>
-  </div>
-  <p className="objects-lede">
-    Create invite‑only circles for clubs, hostels, batches or project teams and share items within a trusted group.
-  </p>
-</section>
-
-{/* SUSTAINABILITY */}
-<section className="objects-sustainability">
-  <div className="objects-section-title">
-    <h2>Sustainability on campus</h2>
-  </div>
-  <p className="objects-lede">
-    Borrowing and sharing reduce unnecessary purchases, lower waste and support a greener campus lifestyle.
-  </p>
-</section>
-
       {/* FEATURED ITEMS */}
       <section className="objects-featured">
 
@@ -244,30 +195,6 @@ export default function Home() {
         </DataState>
 
       </section>
-
-{/* CAMPUS CIRCLES */}
-<section className="objects-circles">
-  <div className="objects-section-title">
-    <h2>Private student communities</h2>
-    <Link className="button" to="/circles">
-      Explore circles
-      <ArrowUpRight size={17} />
-    </Link>
-  </div>
-  <p className="objects-lede">
-    Create invite‑only circles for clubs, hostels, batches or project teams and share items within a trusted group.
-  </p>
-</section>
-
-{/* SUSTAINABILITY */}
-<section className="objects-sustainability">
-  <div className="objects-section-title">
-    <h2>Sustainability on campus</h2>
-  </div>
-  <p className="objects-lede">
-    Borrowing and sharing reduce unnecessary purchases, lower waste and support a greener campus lifestyle.
-  </p>
-</section>
 
       {/* HOW IT WORKS */}
       <section className="objects-how">
@@ -331,29 +258,17 @@ export default function Home() {
         </div>
       </section>
 
-{/* CAMPUS CIRCLES */}
-<section className="objects-circles">
-  <div className="objects-section-title">
-    <h2>Private student communities</h2>
-    <Link className="button" to="/circles">
-      Explore circles
-      <ArrowUpRight size={17} />
-    </Link>
-  </div>
-  <p className="objects-lede">
-    Create invite‑only circles for clubs, hostels, batches or project teams and share items within a trusted group.
-  </p>
-</section>
 
-{/* SUSTAINABILITY */}
-<section className="objects-sustainability">
-  <div className="objects-section-title">
-    <h2>Sustainability on campus</h2>
-  </div>
-  <p className="objects-lede">
-    Borrowing and sharing reduce unnecessary purchases, lower waste and support a greener campus lifestyle.
-  </p>
-</section>
+
+      {/* SUSTAINABILITY */}
+      <section className="objects-sustainability">
+        <div className="objects-section-title">
+          <h2>Sustainability on campus</h2>
+        </div>
+        <p className="objects-lede">
+          Borrowing and sharing reduce unnecessary purchases, lower waste and support a greener campus lifestyle.
+        </p>
+      </section>
 
       {/* TRUST SECTION */}
       <section className="objects-trust">
@@ -365,7 +280,7 @@ export default function Home() {
 
           <p>
             Verified student accounts, clear exchange records
-            and two-way reviews.
+            and two‑way reviews.
           </p>
         </div>
 
@@ -375,30 +290,6 @@ export default function Home() {
         </Link>
 
       </section>
-
-{/* CAMPUS CIRCLES */}
-<section className="objects-circles">
-  <div className="objects-section-title">
-    <h2>Private student communities</h2>
-    <Link className="button" to="/circles">
-      Explore circles
-      <ArrowUpRight size={17} />
-    </Link>
-  </div>
-  <p className="objects-lede">
-    Create invite‑only circles for clubs, hostels, batches or project teams and share items within a trusted group.
-  </p>
-</section>
-
-{/* SUSTAINABILITY */}
-<section className="objects-sustainability">
-  <div className="objects-section-title">
-    <h2>Sustainability on campus</h2>
-  </div>
-  <p className="objects-lede">
-    Borrowing and sharing reduce unnecessary purchases, lower waste and support a greener campus lifestyle.
-  </p>
-</section>
 
       {/* FAQ SECTION */}
       <section className="objects-faq">
@@ -444,30 +335,6 @@ export default function Home() {
 
         </div>
       </section>
-
-{/* CAMPUS CIRCLES */}
-<section className="objects-circles">
-  <div className="objects-section-title">
-    <h2>Private student communities</h2>
-    <Link className="button" to="/circles">
-      Explore circles
-      <ArrowUpRight size={17} />
-    </Link>
-  </div>
-  <p className="objects-lede">
-    Create invite‑only circles for clubs, hostels, batches or project teams and share items within a trusted group.
-  </p>
-</section>
-
-{/* SUSTAINABILITY */}
-<section className="objects-sustainability">
-  <div className="objects-section-title">
-    <h2>Sustainability on campus</h2>
-  </div>
-  <p className="objects-lede">
-    Borrowing and sharing reduce unnecessary purchases, lower waste and support a greener campus lifestyle.
-  </p>
-</section>
 
     </div>
   );

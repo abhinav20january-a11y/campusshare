@@ -27,7 +27,9 @@ import * as admin from '../controllers/adminController.js';
 import * as borrow from '../services/borrowing.js';
 import * as items from '../controllers/itemController.js';
 
-import cloudinary from '../config/cloudinary.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 export const router = Router();
 
@@ -428,12 +430,6 @@ router.post(
       'Choose a JPEG, PNG or WebP image under 5 MB'
     );
 
-    ensure(
-      process.env.CLOUDINARY_API_SECRET,
-      503,
-      'Image uploads require Cloudinary configuration'
-    );
-
     const bytes = req.file.buffer;
 
     const jpeg =
@@ -450,20 +446,34 @@ router.post(
 
     ensure(jpeg || png || webp, 400, 'Invalid image data');
 
-    const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          folder: `campusshare/${req.user.id}`,
-          resource_type: 'image',
-          transformation: [
-            {width: 1600, height: 1600, crop: 'limit'},
-            {quality: 'auto', fetch_format: 'auto'}
-          ]
-        },
-        (error, result) =>
-          error ? reject(error) : resolve(result)
-      ).end(bytes);
-    });
+    let result;
+    if (process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET && process.env.CLOUDINARY_CLOUD_NAME) {
+      // Cloudinary upload
+      result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          {
+            folder: `campusshare/${req.user.id}`,
+            resource_type: 'image',
+            transformation: [
+              {width: 1600, height: 1600, crop: 'limit'},
+              {quality: 'auto', fetch_format: 'auto'}
+            ]
+          },
+          (error, uploadResult) =>
+            error ? reject(error) : resolve(uploadResult)
+        ).end(bytes);
+      });
+    } else {
+      // Fallback to local storage
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const uploadsDir = path.resolve(__dirname, '../../public/uploads');
+      await fs.promises.mkdir(uploadsDir, {recursive: true});
+      const filename = `${Date.now()}-${req.file.originalname}`;
+      const filepath = path.join(uploadsDir, filename);
+      await fs.promises.writeFile(filepath, bytes);
+      result = { secure_url: `/uploads/${filename}`, public_id: null };
+    }
 
     const record = await query(
       'INSERT INTO uploads(user_id,url,public_id,kind) VALUES(?,?,?,?)',
